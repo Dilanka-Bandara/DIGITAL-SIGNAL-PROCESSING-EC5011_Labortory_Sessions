@@ -3,25 +3,33 @@
 %Lab04-Part-A
 %Part 4
 
-% Step 1: Low-pass filter before downsampling
-fc = 3000; 
-[b,a] = butter(8, 2*fc/fs);
-x_f = filter(b, a, x);
+%% EC5011 Lab 4A - Part 4: Change sampling frequency to 6 kHz
 
-% Step 2: Downsample by 5
-x_d = x_f(1:5:end);
+fs = 15000; N = 2048; t = (0:N-1)/fs;
+A1 = 3000; f1 = 1000;
+A2 = 2000; f2 = 2000;
+A3 = 1000; f3 = 5500;
+x = A1*sin(2*pi*f1*t) + A2*sin(2*pi*f2*t) + A3*sin(2*pi*f3*t);
 
-% Step 3: Upsample by 2
-x_u = upsample(x_d, 2);
+% Resample from 15 kHz to 6 kHz (factor 2.5:1)
+% Use MATLAB's resample function (includes filtering)
+y = resample(x, 6, 15);
 
-% Step 4: Filter after upsampling
-[b2, a2] = butter(8, 1/5);
-x_final = filter(b2, a2, x_u);
-fs_final = 6000;
+% Frequency axes
+N_y = length(y);
+f_x = (0:N-1)*(fs/N);
+f_y = (0:N_y-1)*(6000/N_y);
 
-% Plot in Hz
+% Plot magnitude spectra
 figure;
-subplot(4,1,1); plot((0:length(x)-1)*fs/N, abs(fft(x))); title('Original Spectrum'); xlabel('Hz');
-subplot(4,1,2); plot((0:length(x_f)-1)*fs/N, abs(fft(x_f))); title('Filtered'); xlabel('Hz');
-subplot(4,1,3); plot((0:length(x_d)-1)*fs/5/length(x_d), abs(fft(x_d))); title('Downsampled'); xlabel('Hz');
-subplot(4,1,4); plot((0:length(x_final)-1)*fs_final/length(x_final), abs(fft(x_final))); title('Final Output at 6kHz'); xlabel('Hz');
+subplot(2,1,1);
+plot(f_x, abs(fft(x)));
+title('Input Signal Spectrum');
+xlabel('Frequency (Hz)'); ylabel('|X(f)|');
+xlim([0 fs/2]);
+
+subplot(2,1,2);
+plot(f_y, abs(fft(y)));
+title('Resampled Signal Spectrum (6 kHz)');
+xlabel('Frequency (Hz)'); ylabel('|Y(f)|');
+xlim([0 3000]);

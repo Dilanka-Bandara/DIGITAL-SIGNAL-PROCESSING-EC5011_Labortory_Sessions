@@ -3,40 +3,66 @@
 %Lab04-Part-A
 %Part 2
 
-% Given signal parameters
-fs = 15000; % Sampling frequency
-N = 2048;   % Number of samples
-t = (0:N-1)/fs; % Time vector
+%% EC5011 Lab 4A - Part 2: Downsampling by 3 with filtering
 
-% Signal components
+fs = 15000; N = 2048; t = (0:N-1)/fs;
 A1 = 3000; f1 = 1000;
 A2 = 2000; f2 = 2000;
 A3 = 1000; f3 = 5500;
-
-% Sampled signal
 x = A1*sin(2*pi*f1*t) + A2*sin(2*pi*f2*t) + A3*sin(2*pi*f3*t);
 
-% Low-pass filter design (cutoff = fs/6)
-fc = fs/6;
-[b,a] = butter(8, 2*fc/fs); 
-x_filtered = filter(b, a, x);
-xd_f = x_filtered(1:3:end);
-fsd = fs/3;
+% Design low-pass FIR filter (cutoff at fs/6 = 2.5 kHz)
+fc = fs/6; % 2500 Hz
+norm_cutoff = fc/(fs/2);
+h = fir1(100, norm_cutoff);
 
-% Plot in Hz
-figure;
-subplot(3,1,1); 
-plot((0:length(x)-1)*fs/N, abs(fft(x))); title('Original Spectrum'); xlabel('Hz');
-subplot(3,1,2); 
-plot((0:length(x_filtered)-1)*fs/N, abs(fft(x_filtered))); title('Filtered Spectrum'); xlabel('Hz');
-subplot(3,1,3); 
-plot((0:length(xd_f)-1)*fsd/length(xd_f), abs(fft(xd_f))); title('Downsampled with Filter'); xlabel('Hz');
+% Filter the signal
+x_filt = filter(h, 1, x);
 
-% Plot in rad
+% Downsample by 3
+y = x_filt(1:3:end);
+
+% Frequency axes
+f_x = (0:N-1)*(fs/N);
+N_y = length(y);
+f_y = (0:N_y-1)*(fs/3/N_y);
+
+% Plot magnitude spectra (Hz)
 figure;
-subplot(3,1,1); 
-freqz(x,1); title('Original');
-subplot(3,1,2); 
-freqz(x_filtered,1); title('Filtered');
-subplot(3,1,3); 
-freqz(xd_f,1); title('Downsampled');
+subplot(3,1,1);
+plot(f_x, abs(fft(x)));
+title('Input Signal Spectrum');
+xlabel('Frequency (Hz)'); ylabel('|X(f)|');
+xlim([0 fs/2]);
+
+subplot(3,1,2);
+plot(f_x, abs(fft(x_filt)));
+title('Filtered Signal Spectrum');
+xlabel('Frequency (Hz)'); ylabel('|X_{filt}(f)|');
+xlim([0 fs/2]);
+
+subplot(3,1,3);
+plot(f_y, abs(fft(y)));
+title('Downsampled Signal Spectrum (With Filtering)');
+xlabel('Frequency (Hz)'); ylabel('|Y(f)|');
+xlim([0 fs/6]);
+
+% Plot magnitude spectra (rad/sample)
+w_x = linspace(0, pi, N);
+w_y = linspace(0, pi, N_y);
+
+figure;
+subplot(3,1,1);
+plot(w_x, abs(fft(x)));
+title('Input Spectrum (rad/sample)');
+xlabel('Frequency (rad/sample)'); ylabel('|X(e^{j\omega})|');
+
+subplot(3,1,2);
+plot(w_x, abs(fft(x_filt)));
+title('Filtered Spectrum (rad/sample)');
+xlabel('Frequency (rad/sample)'); ylabel('|X_{filt}(e^{j\omega})|');
+
+subplot(3,1,3);
+plot(w_y, abs(fft(y)));
+title('Downsampled Spectrum (rad/sample)');
+xlabel('Frequency (rad/sample)'); ylabel('|Y(e^{j\omega})|');
