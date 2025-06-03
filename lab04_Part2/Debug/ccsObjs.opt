@@ -1,0 +1,1 @@
+"./main.obj" "../C6713.cmd" "../lib/csl6713.lib" "../lib/csl6713e.lib" "../lib/dsk6713bsl.lib" -llibc.a 
