@@ -1,5 +1,3 @@
-%2022e048
-%BANDARA H.G.T.D.
 %Lab04-Part-A
 %Part 1
 
